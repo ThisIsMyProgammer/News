@@ -16,6 +16,7 @@ public class RunReaders {
 		Set<String> mainLinks = reader.huffFrontPageReader();
 		Set<String> huffLinks = new HashSet<String>();
 		Map<String, Integer> countSource = new HashMap<String,Integer>();
+		Map<String, Integer> properMaster = new HashMap<String,Integer>();
 		huffLinks.addAll(mainLinks);
 		
 		System.out.println("----- ALL UNIQUE MAIN LINKS -----");
@@ -34,6 +35,20 @@ public class RunReaders {
 			ReadHuffArticles huffArticle = new ReadHuffArticles(articlelink);
 			
 			ArticleContent oneArticleContent = huffArticle.readArticle();
+			
+			DigestArticle digestArt = new DigestArticle(oneArticleContent);
+			
+			Map<String, Integer> artProper = digestArt.digestSentences();
+			
+			for(Map.Entry<String, Integer> entry : artProper.entrySet()){
+				
+				Integer count = artProper.get(entry.getKey());
+		        if (count != null) {
+		        	properMaster.put(entry.getKey(), count + entry.getValue());
+		        } else {
+		        	properMaster.put(entry.getKey(), entry.getValue());
+		        }
+			}
 			
 			if(oneArticleContent != null){
 				if(!oneArticleContent.articleLinks.isEmpty())
@@ -66,6 +81,16 @@ public class RunReaders {
 		{
 		    System.out.println(entry.getKey() + " used " + entry.getValue() + " times ");
 		}
+		
+		
+		System.out.println("------All Proper Nouns and count ------");
+		
+		for (Map.Entry<String, Integer> entry : properMaster.entrySet())
+		{
+		    System.out.println(entry.getKey() + " used " + entry.getValue() + " times ");
+		}
+		
+		
 		
 	}
 

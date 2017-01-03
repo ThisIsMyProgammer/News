@@ -3,6 +3,7 @@ package com.news.huffpost.reader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jsoup.Jsoup;
@@ -15,7 +16,7 @@ public class ReadHuffArticles {
 	Document dom;
 	String article_url;
 	boolean readArticle = false;
-	Set<String> AticleContent;
+	List<String> AticleContent;
 	Set<String> ArticleUniqLinks;
 	
 	
@@ -26,16 +27,15 @@ public class ReadHuffArticles {
 	
 	public ArticleContent readArticle(){
 		ArticleUniqLinks = new HashSet<String>();
-		AticleContent = new HashSet<String>();
+		AticleContent = new ArrayList<String>();
 		try {
-		 dom = Jsoup.connect(article_url).get();
+		 dom = Jsoup.connect(article_url).userAgent("Mozilla").get();
 		 
 		 Elements getText = dom.getElementsByTag("p");
 		 
 		 for(int para = 0; para <getText.size(); para++){
-			 
-			 System.out.println(getText.get(para));
 			 AticleContent.add(getText.get(para).text());
+			 System.out.println(getText.get(para).text());
 			 
 			 Elements articleLinks = getText.get(para).getElementsByTag("a");
 			 if(articleLinks.attr("href")!= ""){
