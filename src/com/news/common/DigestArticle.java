@@ -148,7 +148,7 @@ public class DigestArticle {
 			}
 		}
 		
-	    System.out.println("------ Unique Propers  ------");
+	    System.out.println("------ Unique Propers for " + articleContent.articleUrl + "------");
 		
 		for (Map.Entry<String, Integer> entry : uniqueProper.entrySet())
 		{

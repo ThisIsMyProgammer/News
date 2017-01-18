@@ -37,7 +37,7 @@ public class ReadMarketWatchArticle {
 			 AticleContent.add(getText.get(para).text());
 			 System.out.println(getText.get(para).text());
 			 
-			 Elements articleLinks = getText.get(para).getElementsByTag("a");
+			 Elements articleLinks = getText.get(para).getElementsByTag("a"); 
 			 if(articleLinks.attr("href")!= ""){
 				 //System.out.println(articleLinks.attr("href"));
 				 ArticleUniqLinks.add(articleLinks.attr("href"));

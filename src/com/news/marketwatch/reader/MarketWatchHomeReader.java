@@ -24,7 +24,6 @@ public class MarketWatchHomeReader {
 		dom = Jsoup.connect(base_url).get();
 		Elements articleLinks = dom.getElementsByClass("article__content");
 		
-
 		for( Element articleLink :  articleLinks){
 			/*add all splash links to unqiue*/
 			System.out.println(articleLink.text());
@@ -42,5 +41,6 @@ public class MarketWatchHomeReader {
 	}
 	
 	}
+	
 }
 
