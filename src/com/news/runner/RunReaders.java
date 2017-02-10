@@ -1,5 +1,7 @@
 package com.news.runner;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,101 +10,219 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.rowset.CachedRowSet;
+
 import com.news.huffpost.reader.*;
 import com.news.common.*;
 
 public class RunReaders {
 
 	public static void main(String[] args) {
-				
+
+		/*
+		 * need to implement change to remove proper clean as well as getting
+		 * rid of end of line 's
+		 */
+
 		List<String> coveredWebsites = new ArrayList<String>();
 		coveredWebsites.add("huffingtonpost");
 		coveredWebsites.add("marketwatch");
-		coveredWebsites.add("politico");
+		coveredWebsites.add("bbc");
+		List<String> cleanProper = new ArrayList<String>();
 
-		List<SiteConfig> sites = new ArrayList<SiteConfig>();
-		Set<String> gatheredLinks = null;
-		List<ArticleContent> readArticles = new ArrayList<ArticleContent>();
-		Map<String, Integer> allProperNouns = new HashMap<String, Integer>();
+		Set<String> siteLinks = null;
 
-		String huffUrl = "http://www.huffingtonpost.com/";
-		List<String> huffLinkList = new ArrayList<String>();
-		huffLinkList.add("splash__link");
-		huffLinkList.add("card__link");
-		SiteConfig huffSite = new SiteConfig(huffUrl, huffLinkList);
-		sites.add(huffSite);
-		
-		String politicoUrl = "http://www.politico.com/";
-		List<String> politicoLinkList = new ArrayList<String>();
-		politicoLinkList.add("headline-content");
-		SiteConfig politicoSite = new SiteConfig(politicoUrl, politicoLinkList);
-		sites.add(politicoSite);
-				
-		String marketUrl = "http://www.marketwatch.com";
-		List<String> martketLinkList = new ArrayList<String>();
-		martketLinkList.add("article__content");
-		SiteConfig marketSite = new SiteConfig(marketUrl, martketLinkList, true);
-		sites.add(marketSite);
-		
-		int countSites = 0;
+		DataBaseConnector dbConnect = new DataBaseConnector();
+		try {
 
-		for (SiteConfig singleSite : sites) {
-			System.out.println("========================"
-					+ singleSite.getHomePageURL() + "======================");
+			CachedRowSet rsCleanProper = dbConnect
+					.queryNewsDB("select * from PROPER_CLEANER;");
 
-			GenericHomepage genHome = new GenericHomepage(
-					singleSite.getHomePageURL());
-			if (gatheredLinks != null)
-				gatheredLinks.addAll(genHome.ReadHomepageLinks(
-						singleSite.getHomeTags(), singleSite.isHomeDeepLook()));
-			else {
-				System.out.println("working correctly");
-				gatheredLinks = genHome.ReadHomepageLinks(
-						singleSite.getHomeTags(), singleSite.isHomeDeepLook());
+			while (rsCleanProper.next()) {
+				cleanProper.add(rsCleanProper.getString(1));
 			}
 
-			countSites++;
+			int batch_id = -999;
 
-		}
-		System.out
-				.println("========================Running Articles======================");
-		for (String oneLink : gatheredLinks) {
-			String parentSite;
-			if(oneLink.length() > 0 ){
-				System.out.println(oneLink);
-				String[] splitArticle = oneLink.split("\\.");
-				System.out.println(splitArticle[0]);
-				System.out.println(splitArticle[0]);
-				parentSite = splitArticle[1];
+			dbConnect.updateNewsDB("insert into BATCHES() values ();");
+			CachedRowSet rsBatch = dbConnect
+					.queryNewsDB("select max(batch_id) from BATCHES;");
+
+			if (rsBatch.next()) {
+				batch_id = rsBatch.getInt(1);
+				System.out.println(batch_id);
 			}
-			else{
-				parentSite = "";
-			}
-			//System.out.println(splitArticle);
-			if (coveredWebsites.contains(parentSite)) {
-				GenericArticle oneArticle = new GenericArticle(oneLink);
-				ArticleContent newArt = oneArticle.readAndDigestArticle();
-				readArticles.add(newArt);
-				for (Map.Entry<String, Integer> entry : newArt.properNouns
-						.entrySet()) {
-					Integer count = allProperNouns.get(entry.getKey());
-					if (count != null) {
-						allProperNouns.put(entry.getKey(),
-								count + entry.getValue());
+			if (batch_id != -999) {
+
+				ResultSet rsHomeKeys = dbConnect
+						.queryNewsDB("SELECT * FROM WEBSITE wb JOIN HOME_PAGE_SEARCH_KEYS hpsk on wb.id = hpsk.site_id order by wb.id;");
+				int webID = -1;
+				List<String> searchingList = null;
+				String searchHomeUrl = null;
+				List<SiteConfig> sites = new ArrayList<SiteConfig>();
+				String sType = null;
+				while (rsHomeKeys.next()) {
+
+					if (rsHomeKeys.getInt(1) == webID) {
+						searchingList.add(rsHomeKeys.getString(4));
 					} else {
-						allProperNouns.put(entry.getKey(), entry.getValue());
+						if (searchHomeUrl != null) {
+							SiteConfig newSite = new SiteConfig(searchHomeUrl,
+									webID, searchingList);
+							sites.add(newSite);
+						}
+						webID = rsHomeKeys.getInt(1);
+						searchHomeUrl = rsHomeKeys.getString(2);
+						System.out.println(searchHomeUrl);
+						searchingList = new ArrayList<String>();
+						searchingList.add(rsHomeKeys.getString(4));
+						sType = rsHomeKeys.getString(5);
+
+					}
+				}
+				SiteConfig newSite = new SiteConfig(searchHomeUrl, webID,
+						searchingList, sType);
+				sites.add(newSite);
+
+				int countSites = 0;
+
+				for (SiteConfig singleSite : sites) {
+					System.out.println("========================"
+							+ singleSite.getHomePageURL()
+							+ "======================");
+
+					GenericHomepage genHome = new GenericHomepage(
+							singleSite.getHomePageURL(), singleSite.getID());
+					siteLinks = new HashSet<String>();
+					if (singleSite.getSearchType().equals("html")) {
+						siteLinks.addAll(genHome.ReadHomepageLinks(singleSite
+								.getHomeTags()));
+					} else {
+						siteLinks.addAll(genHome
+								.ReadHomepageJsonHomeLinks(singleSite
+										.getHomeTags()));
+					}
+
+					for (String oneLink : siteLinks) {
+						String parentSite;
+						if (oneLink.length() > 0) {
+							System.out.println(oneLink);
+							String[] splitArticle = oneLink.split("\\.");
+							System.out.println(splitArticle[0]);
+							parentSite = splitArticle[1];
+						} else {
+							parentSite = "";
+						}
+						// System.out.println(splitArticle);
+						if (coveredWebsites.contains(parentSite)) {
+
+							CachedRowSet rsIsRead = dbConnect
+									.queryNewsDB("Select article_id from ARTICLES where article_link = '"
+											+ oneLink + "';");
+
+							if (!rsIsRead.next()) {
+
+								GenericArticle oneArticle = new GenericArticle(
+										oneLink, singleSite.getID());
+								ArticleContent newArt = oneArticle
+										.readAndDigestArticle();
+								if (newArt.articleLines.size() > 1) {
+									dbConnect
+											.updateNewsDB("insert into ARTICLES(article_link,parent_id,batch_id) values ('"
+													+ newArt.articleUrl
+													+ "',"
+													+ singleSite.getID()
+													+ ","
+													+ batch_id + ");");
+
+									CachedRowSet rsArticle = dbConnect
+											.queryNewsDB("Select article_id from ARTICLES where article_link = '"
+													+ newArt.articleUrl + "';");
+									if (rsArticle.next()) {
+										int article_id = rsArticle.getInt(1);
+										for (Map.Entry<String, Integer> entry : newArt.properNouns
+												.entrySet()) {
+
+											String oneProper = entry.getKey();
+											if (!cleanProper.contains(oneProper)) {
+
+												int proper_id = -999;
+												int count = -999;
+												int art_count = -999;
+
+												CachedRowSet rsProper = dbConnect
+														.queryNewsDB("select proper_id, count from ALL_PROPER where full_proper = '"
+																+ oneProper
+																+ "';");
+
+												if (rsProper.next()) {
+													proper_id = rsProper
+															.getInt(1);
+													art_count = entry
+															.getValue();
+													count = rsProper.getInt(2)
+															+ entry.getValue();
+													dbConnect
+															.updateNewsDB("update ALL_PROPER set count ="
+																	+ count
+																	+ " where proper_id ="
+																	+ proper_id
+																	+ ";");
+												} else {
+													count = entry.getValue();
+													art_count = count;
+													dbConnect
+															.updateNewsDB("insert into ALL_PROPER(full_proper,count) values ('"
+																	+ oneProper
+																	+ "',"
+																	+ count
+																	+ ");");
+
+													CachedRowSet newRS = dbConnect
+															.queryNewsDB("select proper_id, count from ALL_PROPER where full_proper = '"
+																	+ oneProper
+																	+ "';");
+
+													if (newRS.next()) {
+														proper_id = newRS
+																.getInt(1);
+													} else {
+														proper_id = -999;
+														count = -999;
+													}
+
+												}
+
+												if (proper_id != -999
+														&& art_count != -999) {
+													dbConnect
+															.updateNewsDB("insert into ARTICLE_PROPER (proper_id,article_id,count) values ("
+																	+ proper_id
+																	+ ","
+																	+ article_id
+																	+ ","
+																	+ art_count
+																	+ ");");
+												}
+
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}
-		}
 
-		System.out.println("------ Unique Propers totals ------");
+			dbConnect
+					.updateNewsDB("UPDATE BATCHES set END_TIME = CURRENT_TIMESTAMP where batch_id ="
+							+ batch_id + ";");
 
-		for (Map.Entry<String, Integer> entry : allProperNouns.entrySet()) {
-			System.out.println(entry.getKey() + " used " + entry.getValue()
-					+ " times ");
+		} catch (SQLException e) {
+
+			e.printStackTrace();
 		}
 
 	}
-
 }

@@ -7,31 +7,37 @@ public class SiteConfig {
 	String homePageURL;
 	List<String> hometags;
 	boolean homeDeepLook;
+	int id;
+	String searchType;
 	
 	public SiteConfig(){
 		
 	}
 	
-	public SiteConfig(String bUrl,List<String> inTags, boolean lookDeep){
+	public SiteConfig(String bUrl,int webID,List<String> inTags, String sType){
 		homePageURL = bUrl;
 		hometags = inTags;
-		homeDeepLook = lookDeep;
+		id = webID;
+		searchType = sType;
 	}
 	
-	public SiteConfig(String bUrl,List<String> inTags){
-		this(bUrl,inTags,false);
+	public SiteConfig(String bUrl,int webID,List<String> inTags){
+		this(bUrl,webID,inTags, "html");
 	}
 
-	public boolean isHomeDeepLook() {
-		return homeDeepLook;
+	public String getSearchType() {
+		return searchType;
 	}
 
-	public void setHomeDeepLook(boolean homeDeepLook) {
-		this.homeDeepLook = homeDeepLook;
+	public void setSearchType(String searchType) {
+		this.searchType = searchType;
 	}
 
 	public String getHomePageURL() {
 		return homePageURL;
+	}
+	public int getID(){
+		return id;
 	}
 
 	public void setHomePageURL(String homePageURL) {

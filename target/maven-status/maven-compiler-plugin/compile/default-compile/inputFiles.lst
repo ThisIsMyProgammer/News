@@ -1,4 +1,15 @@
-F:\garvey\workspace\NewsReader\src\com\news\huffpost\reader\ReaderHomepage.java
+F:\garvey\workspace\NewsReader\src\com\news\marketwatch\reader\MarketWatchHomeReader.java
+F:\garvey\workspace\NewsReader\src\com\news\politico\reader\ReadPoliticoArticle.java
+F:\garvey\workspace\NewsReader\src\com\news\common\DigestArticle.java
+F:\garvey\workspace\NewsReader\src\com\news\politico\reader\PoliticoHomepageReader.java
+F:\garvey\workspace\NewsReader\src\com\news\tests\RunTests.java
 F:\garvey\workspace\NewsReader\src\com\news\huffpost\reader\ReadHuffArticles.java
+F:\garvey\workspace\NewsReader\src\com\news\marketwatch\reader\ReadMarketWatchArticle.java
+F:\garvey\workspace\NewsReader\src\com\news\huffpost\reader\ReaderHomepage.java
+F:\garvey\workspace\NewsReader\src\com\news\common\GenericArticle.java
+F:\garvey\workspace\NewsReader\src\com\news\common\SiteConfig.java
+F:\garvey\workspace\NewsReader\src\com\news\common\DataBaseConnector.java
+F:\garvey\workspace\NewsReader\src\com\news\common\GenericHomepage.java
+F:\garvey\workspace\NewsReader\src\com\news\runner\RunHuffReader.java
 F:\garvey\workspace\NewsReader\src\com\news\runner\RunReaders.java
 F:\garvey\workspace\NewsReader\src\com\news\common\ArticleContent.java

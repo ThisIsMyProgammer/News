@@ -3,6 +3,7 @@ package com.news.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,7 +30,7 @@ public class DigestArticle {
 	public Map<String, Integer> digestSentences(){
 		List<String> allSent = getSentences(articleContent.articleLines);
 		
-		//unComment to see sentence breakdown
+		//uncomment to see sentence breakdown
 		/*for(String foundSent : allSent){
 			System.out.println(foundSent);
 		}*/
@@ -40,7 +41,7 @@ public class DigestArticle {
 		
 	}
 	
-	//TODO create quote extracting function
+	
 	public void extractQuotes(){
 		List<String> quotes = new ArrayList<String>();
 		List<String> noQuotesLines = new ArrayList<String>();
@@ -73,16 +74,16 @@ public class DigestArticle {
 		return artSentences;
 	}
 	
-	//TODO needs to handle multiple word proper nouns
+	
 	public Map<String, Integer> findProperNouns(List<String> sentences){
 		
 		Map<String, Integer> uniqueProper = new HashMap<String,Integer>();
 		
 		Pattern caps = Pattern.compile("[A-Z]");
-		Pattern endOfWord = Pattern.compile("[,\\s]");
+		Pattern endOfWord = Pattern.compile("[,\\s\":()]");
 		
 		for(String sent : sentences){
-			int sentMax = sent.length() - 1;
+			int sentMax = sent.length();
 			int previousStart = 0;
 			if(sent.length()> 0){
 				if(sent.charAt(0) == ' '){
@@ -104,8 +105,12 @@ public class DigestArticle {
 					if(startNoun != -1){
 						
 						endNoun = endMatcher.find(startNoun) ? endMatcher.start() : -1;
-						if(endNoun == -1)endNoun = sentMax;
-						properString.append(sent.substring(startNoun, endNoun));
+						if(endNoun == -1){ 
+							properString.append(sent.substring(startNoun));
+							endProper = true;
+							endNoun = sentMax;
+						}
+						else properString.append(sent.substring(startNoun, endNoun));
 					}
 					if(sentMax > endNoun + 1){
 						previousStart = startNoun;
@@ -120,6 +125,20 @@ public class DigestArticle {
 							//System.out.println("------------Double String ----------------------");
 							if(previousStart != 0){
 								String properDone = properString.toString(); 
+								if(properDone.length()>2){
+									properDone = properDone.replaceAll("\u2019", "'");
+									properDone = properDone.replaceAll("\u201D", "\"");
+									properDone = properDone.replaceAll("'s", "");
+									if(properDone.substring(properDone.length() - 1, properDone.length()).equals("'")){
+										properDone = properDone.substring(0, properDone.length() - 1);
+									}
+									if(properDone.substring(properDone.length() - 1, properDone.length()).equals("\"")){
+										properDone = properDone.substring(0, properDone.length() - 1);
+									}
+									properDone = properDone.replaceAll("'", "\\\\'");
+									
+									
+								}
 								System.out.println(properDone);
 								Integer count = uniqueProper.get(properDone);
 						        if (count != null) {
@@ -135,6 +154,20 @@ public class DigestArticle {
 					else {
 						startNoun = -1;
 						String properDone = properString.toString(); 
+						if(properDone.length()>2){
+							properDone = properDone.replaceAll("\u2019", "'");
+							properDone = properDone.replaceAll("\u201D", "\"");
+							properDone = properDone.replaceAll("'s", "");
+							if(properDone.substring(properDone.length() - 1, properDone.length()).equals("'")){
+								properDone = properDone.substring(0, properDone.length() - 1);
+							}
+							if(properDone.substring(properDone.length() - 1, properDone.length()).equals("\"")){
+								properDone = properDone.substring(0, properDone.length() - 1);
+							}
+							
+							properDone = properDone.replaceAll("'", "\\\\'");
+							
+						}
 						System.out.println(properDone);
 						Integer count = uniqueProper.get(properDone);
 				        if (count != null) {
@@ -150,10 +183,15 @@ public class DigestArticle {
 		
 	    System.out.println("------ Unique Propers for " + articleContent.articleUrl + "------");
 		
-		for (Map.Entry<String, Integer> entry : uniqueProper.entrySet())
-		{
-		    System.out.println(entry.getKey() + " used " + entry.getValue() + " times ");
-		}
+	    for(Iterator<Map.Entry<String, Integer>> it = uniqueProper.entrySet().iterator(); it.hasNext(); ) {
+	        Map.Entry<String, Integer> entry = it.next();
+	        if(entry.getKey().length()!=1){
+	        	 System.out.println(entry.getKey() + " used " + entry.getValue() + " times ");
+			}else{
+				it.remove();
+			}
+	      }
+	    
 		return uniqueProper;
 		
 		
