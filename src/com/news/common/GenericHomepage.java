@@ -134,9 +134,10 @@ public class GenericHomepage {
 
 					//selectedElements = dom.getElementsByClass(tag);
 					
-					selectedElements = dom.getElementsByAttribute("target");
+					/*selectedElements = dom.getElementsByAttribute("target");
+					dom.get*/
 
-							//dom.getElementsByAttributeValue("target", tag);
+					dom.getElementsByAttributeValue("class", tag);
 					//dom.getElementsByAttribute("target");
 
 					System.out.println(tag);
