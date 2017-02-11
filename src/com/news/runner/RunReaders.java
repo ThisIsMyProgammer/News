@@ -28,6 +28,8 @@ public class RunReaders {
 		coveredWebsites.add("huffingtonpost");
 		coveredWebsites.add("marketwatch");
 		coveredWebsites.add("bbc");
+		coveredWebsites.add("reuters");
+		coveredWebsites.add("politico");
 		List<String> cleanProper = new ArrayList<String>();
 
 		Set<String> siteLinks = null;
@@ -57,31 +59,36 @@ public class RunReaders {
 				ResultSet rsHomeKeys = dbConnect
 						.queryNewsDB("SELECT * FROM WEBSITE wb JOIN HOME_PAGE_SEARCH_KEYS hpsk on wb.id = hpsk.site_id order by wb.id;");
 				int webID = -1;
+				List<String> attrList = null;
 				List<String> searchingList = null;
 				String searchHomeUrl = null;
+				
 				List<SiteConfig> sites = new ArrayList<SiteConfig>();
 				String sType = null;
 				while (rsHomeKeys.next()) {
 
 					if (rsHomeKeys.getInt(1) == webID) {
-						searchingList.add(rsHomeKeys.getString(4));
+						attrList.add(rsHomeKeys.getString(4));
+						searchingList.add(rsHomeKeys.getString(5));
 					} else {
 						if (searchHomeUrl != null) {
 							SiteConfig newSite = new SiteConfig(searchHomeUrl,
-									webID, searchingList);
+									webID,attrList ,searchingList);
 							sites.add(newSite);
 						}
 						webID = rsHomeKeys.getInt(1);
 						searchHomeUrl = rsHomeKeys.getString(2);
 						System.out.println(searchHomeUrl);
 						searchingList = new ArrayList<String>();
-						searchingList.add(rsHomeKeys.getString(4));
+						attrList = new ArrayList<String>();
+						attrList.add(rsHomeKeys.getString(4));
+						searchingList.add(rsHomeKeys.getString(5));
 						sType = rsHomeKeys.getString(5);
 
 					}
 				}
 				SiteConfig newSite = new SiteConfig(searchHomeUrl, webID,
-						searchingList, sType);
+						attrList,searchingList, sType);
 				sites.add(newSite);
 
 				int countSites = 0;
@@ -95,7 +102,7 @@ public class RunReaders {
 							singleSite.getHomePageURL(), singleSite.getID());
 					siteLinks = new HashSet<String>();
 					if (singleSite.getSearchType().equals("html")) {
-						siteLinks.addAll(genHome.ReadHomepageLinks(singleSite
+						siteLinks.addAll(genHome.ReadHomepageLinks(singleSite.getHomeattr(),singleSite
 								.getHomeTags()));
 					} else {
 						siteLinks.addAll(genHome

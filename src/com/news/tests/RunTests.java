@@ -35,7 +35,7 @@ public class RunTests {
 		// runMarketHomePage();
 		// runMarketArticle("http://www.marketwatch.com/story/these-stock-market-sectors-will-be-the-most-volatile-in-2017-goldman-sachs-2017-01-05");
 		// runPoliticoHomePage();
-		 //testGenericMultipleHompage();
+		//testGenericMultipleHompage();
 	    testSingleGenericHomepage();
 	    //readSingleGenericArticle();
 		// testDatabase();
@@ -257,7 +257,40 @@ public class RunTests {
 							+ "</td></tr>";
 					full_page.append(singleLine);
 				}
-				full_page.append("</table>");					
+				full_page.append("</table>");	
+				
+				
+				
+				String allProperArticleCountQuery = "Select AP.full_proper, AP.count," 
+						+" count(artProp.proper_id) articleCount from ALL_PROPER AP join ARTICLE_PROPER "
+						+ "artProp on AP.proper_id = artProp.proper_id group by artProp.proper_id order by "
+						+ "articleCount desc limit 20;";
+				
+				System.out.println(allProperArticleCountQuery);
+						
+						
+						CachedRowSet rsArticleProperCountAll = dbConnect
+								.queryNewsDB(allProperArticleCountQuery);
+						
+						full_page.append("<br><br><h2>Total Articles Used In</h2><table style=\"width:100%\">");
+						String allProperArticleCountStart = "<tr><th>Name</th><th>Total Count</th><th>Article Count</th></tr>";
+						full_page.append(allProperArticleCountStart);
+						
+						
+						while(rsArticleProperCountAll.next()){
+							
+							String full_proper = rsArticleProperCountAll.getString(1);
+							int total_count = rsArticleProperCountAll.getInt(2);
+							int article_count = rsArticleProperCountAll.getInt(3);
+							
+							String singleLine = "<tr><td>" + full_proper + "</td><td>" + total_count
+									+ "</td><td>" + article_count +"</td></tr>";
+							full_page.append(singleLine);
+							
+						}
+						
+						
+						full_page.append("</table>");	
 				
 				//This must be the last thing added
 				full_page.append("<div id=\"chart_div\"></div></html>");
@@ -468,7 +501,7 @@ public class RunTests {
 	}
 
 	public static void testDatabase() {
-		DataBaseConnector dbConnect = new DataBaseConnector();
+		/*DataBaseConnector dbConnect = new DataBaseConnector();
 		try {
 			CachedRowSet rs = dbConnect
 					.queryNewsDB("SELECT * FROM WEBSITE wb JOIN HOME_PAGE_SEARCH_KEYS hpsk on wb.id = hpsk.site_id order by wb.id;");
@@ -501,7 +534,7 @@ public class RunTests {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} */
 
 		/*
 		 * List<String> huffLinkList = new ArrayList<String>();
@@ -514,12 +547,18 @@ public class RunTests {
 
 	public static void testSingleGenericHomepage() {
 		Set<String> gatheredLinks = null;
-		String testHomeUrl = "http://www.politico.com/";
+		String testHomeUrl = "http://www.reuters.com";
 		List<String> testLinkList = new ArrayList<String>();
-		testLinkList.add("_top");
+		List<String> testattrList = new ArrayList<String>();
+		/*testLinkList.add("_top");
+		testattrList.add("target");*/
+		testLinkList.add("story-title");
+		testattrList.add("class");
+		
+		
 		//testLinkList.add("hero-v6-story__headline-link");
-		GenericHomepage genHome = new GenericHomepage(testHomeUrl, -999);
-		gatheredLinks = genHome.ReadHomepageLinks(testLinkList);
+		GenericHomepage genHome = new GenericHomepage(testHomeUrl, 5);
+		gatheredLinks = genHome.ReadHomepageLinks(testattrList,testLinkList);
 
 		for (String oneLink : gatheredLinks) {
 			System.out.println(oneLink);
@@ -529,8 +568,8 @@ public class RunTests {
 
 	public static void readSingleGenericArticle() {
 		GenericArticle oneArt = new GenericArticle(				
-				"http://www.huffingtonpost.com/entry/trump-administration-leaks_us_589a45f1e4b04061313a1fbb?ncid=inblnkushpmg00000009",
-				1);
+				"http://www.reuters.com/article/idUSKBN15O2XS",
+				5);
 		ArticleContent testContent = oneArt.readAndDigestArticle();
 
 	}
@@ -545,28 +584,32 @@ public class RunTests {
 					.queryNewsDB("SELECT * FROM WEBSITE wb JOIN HOME_PAGE_SEARCH_KEYS hpsk on wb.id = hpsk.site_id order by wb.id;");
 			int webID = -1;
 			List<String> searchingList = null;
+			List<String> attrList = null;
 			String searchHomeUrl = null;
 			List<SiteConfig> sites = new ArrayList<SiteConfig>();
 			while (rs.next()) {
 
 				if (rs.getInt(1) == webID) {
-					searchingList.add(rs.getString(4));
+					attrList.add(rs.getString(4));
+					searchingList.add(rs.getString(5));
 				} else {
 					if (searchHomeUrl != null) {
 						SiteConfig newSite = new SiteConfig(searchHomeUrl,
-								webID, searchingList);
+								webID,attrList, searchingList);
 						sites.add(newSite);
 					}
 					webID = rs.getInt(1);
 					searchHomeUrl = rs.getString(2);
 					System.out.println(searchHomeUrl);
 					searchingList = new ArrayList<String>();
-					searchingList.add(rs.getString(4));
+					attrList = new ArrayList<String>();
+					attrList.add(rs.getString(4));
+					searchingList.add(rs.getString(5));
 
 				}
 			}
 			SiteConfig newSite = new SiteConfig(searchHomeUrl, webID,
-					searchingList);
+					attrList,searchingList);
 			sites.add(newSite);
 
 			int countSites = 0;
@@ -578,14 +621,16 @@ public class RunTests {
 
 				GenericHomepage genHome = new GenericHomepage(
 						singleSite.getHomePageURL(), singleSite.getID());
-				if (gatheredLinks != null)
-					gatheredLinks.addAll(genHome.ReadHomepageLinks(singleSite
+				if (gatheredLinks != null){
+					gatheredLinks.addAll(genHome.ReadHomepageLinks(singleSite.getHomeattr(),singleSite
 							.getHomeTags()));
 				// gatheredLinks.addAll(gatheredLinks =
 				// genHome.ReadTryHomepageLinks());
-				else {
-					System.out.println("working correctly");
-					gatheredLinks = genHome.ReadHomepageLinks(singleSite
+				} else {
+					System.out.println(countSites);
+					System.out.println(singleSite.getHomePageURL());
+					
+					gatheredLinks = genHome.ReadHomepageLinks(singleSite.getHomeattr(),singleSite
 							.getHomeTags());
 
 					// gatheredLinks = genHome.ReadTryHomepageLinks();

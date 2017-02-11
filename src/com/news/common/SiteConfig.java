@@ -6,6 +6,7 @@ public class SiteConfig {
 
 	String homePageURL;
 	List<String> hometags;
+	List<String> homeattr;
 	boolean homeDeepLook;
 	int id;
 	String searchType;
@@ -14,15 +15,24 @@ public class SiteConfig {
 		
 	}
 	
-	public SiteConfig(String bUrl,int webID,List<String> inTags, String sType){
+	public SiteConfig(String bUrl,int webID,List<String> inAttr,List<String> inTags, String sType){
 		homePageURL = bUrl;
 		hometags = inTags;
 		id = webID;
 		searchType = sType;
+		homeattr = inAttr;
 	}
 	
-	public SiteConfig(String bUrl,int webID,List<String> inTags){
-		this(bUrl,webID,inTags, "html");
+	public SiteConfig(String bUrl,int webID,List<String> inAttr,List<String> inTags){
+		this(bUrl,webID,inAttr,inTags, "html");
+	}
+
+	public List<String> getHomeattr() {
+		return homeattr;
+	}
+
+	public void setHomeattr(List<String> homeattr) {
+		this.homeattr = homeattr;
 	}
 
 	public String getSearchType() {
