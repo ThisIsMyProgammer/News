@@ -36,7 +36,7 @@ public class RunTests {
 		// runMarketHomePage();
 		// runMarketArticle("http://www.marketwatch.com/story/these-stock-market-sectors-will-be-the-most-volatile-in-2017-goldman-sachs-2017-01-05");
 		// runPoliticoHomePage();
-	    //testGenericMultipleHompage();
+	    testGenericMultipleHompage();
 	    //testSingleGenericHomepage();
 	    //readSingleGenericArticle();
 		// testDatabase();
@@ -53,7 +53,7 @@ public class RunTests {
 
 		////testquery();
 		//siteTest();
-		testThing();
+		//testThing();
 	}
 	
 	

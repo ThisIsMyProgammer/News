@@ -68,7 +68,7 @@ public class RunReaders {
 					} else {
 						if (searchHomeUrl != null) {
 							SiteConfig newSite = new SiteConfig(searchHomeUrl,
-									webID,attrList ,searchingList);
+									webID,attrList ,searchingList, sType);
 							sites.add(newSite);
 						}
 						webID = rsHomeKeys.getInt(1);
@@ -78,7 +78,7 @@ public class RunReaders {
 						attrList = new ArrayList<String>();
 						attrList.add(rsHomeKeys.getString(4));
 						searchingList.add(rsHomeKeys.getString(5));
-						sType = rsHomeKeys.getString(5);
+						sType = rsHomeKeys.getString(6);
 
 					}
 				}
@@ -110,7 +110,7 @@ public class RunReaders {
 						if (oneLink.length() > 0) {
 							System.out.println(oneLink);
 							String[] splitArticle = oneLink.split("\\.");
-							System.out.println(splitArticle[0]);
+							System.out.println(splitArticle[1]);
 							parentSite = splitArticle[1];
 						} else {
 							parentSite = "";
