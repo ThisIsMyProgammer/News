@@ -80,7 +80,7 @@ public class DigestArticle {
 		Map<String, Integer> uniqueProper = new HashMap<String,Integer>();
 		
 		Pattern caps = Pattern.compile("[A-Z]");
-		Pattern endOfWord = Pattern.compile("[,\\s\":()]");
+		Pattern endOfWord = Pattern.compile("[,\\s\":();]");
 		
 		for(String sent : sentences){
 			int sentMax = sent.length();

@@ -17,6 +17,7 @@ import java.util.Vector;
 
 import javax.sql.rowset.CachedRowSet;
 
+
 import com.news.common.ArticleContent;
 import com.news.common.DataBaseConnector;
 import com.news.common.DigestArticle;
@@ -35,8 +36,8 @@ public class RunTests {
 		// runMarketHomePage();
 		// runMarketArticle("http://www.marketwatch.com/story/these-stock-market-sectors-will-be-the-most-volatile-in-2017-goldman-sachs-2017-01-05");
 		// runPoliticoHomePage();
-		//testGenericMultipleHompage();
-	    testSingleGenericHomepage();
+	    //testGenericMultipleHompage();
+	    //testSingleGenericHomepage();
 	    //readSingleGenericArticle();
 		// testDatabase();
 
@@ -50,94 +51,42 @@ public class RunTests {
 
 		// getDailyBatches();
 
-		//testquery();
+		////testquery();
 		//siteTest();
-		//testThing();
+		testThing();
 	}
 	
 	
 	public static void testThing(){
-     try {
-		DataBaseConnector dbConnect = new DataBaseConnector();
-		Map<Integer, String> websiteMap = new HashMap<Integer, String>();
-		CachedRowSet rsAllWebsites = dbConnect
-				.queryNewsDB("Select * from WEBSITE");
-		
-		Vector<Vector<Integer>> batchCounts = new Vector<Vector<Integer>>();
-		Vector<Integer> identifierRow = new Vector<Integer>();
-		identifierRow.add(0);
-		Vector<Integer> initializer = new Vector<Integer>();
-		while (rsAllWebsites.next()){
-			websiteMap.put( rsAllWebsites.getInt(1), rsAllWebsites.getString(2));
-			identifierRow.add(rsAllWebsites.getInt(1));
-			initializer.add(0);
+    	 StringBuilder full_page = new StringBuilder();
+ 		String mainDisplayHeader = "<html><head><link type=\"text/css\" rel=\"stylesheet\" href=\"CSS/MainDisplay.css\">";
+ 		full_page.append(mainDisplayHeader);
+
+ 		try {
+ 			DataBaseConnector dbConnect = new DataBaseConnector();
+
+ 			CachedRowSet rsAllPropers = dbConnect
+ 					.queryNewsDB("Select * from ALL_PROPER");
+
+ 			full_page
+ 					.append("<h2>Daily Proper Noun Counts</h2><table style=\"width:100%\">");
+ 			full_page.append("<tr><th>Full Proper</th><th>Type</th></tr>");
+
+ 			while (rsAllPropers.next()) {
+ 				String properString = rsAllPropers.getString(2);
+ 				full_page.append("<tr><td>"+ properString +"</td><td>1</td></tr>");
+ 				
+ 			}
+
+ 			full_page.append("</table>");
+ 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		CachedRowSet rsChartBatchBySite = dbConnect
-				.queryNewsDB("Select ART.batch_id,ART.parent_id,web.home_link,count(ART.article_link)" + 
-		" from ARTICLES ART join WEBSITE web where ART.parent_id = web.id group by batch_id, parent_id " +
-						"order by ART.batch_id asc;");
+
+		full_page.append("</html>");
 		
-		
-		int numberOfSites = rsAllWebsites.size() + 2;
-		initializer.add(0);
-		Vector<Integer> newRow = null;
-		System.out.println(initializer.size());
-		
-		
-		//List<Integer> list = new ArrayList<>(Arrays.asList(intInializer));
-		
-		int currentBatch = 0;
-		int batchCountTotal = 0;
-		
-		while(rsChartBatchBySite.next()){
-			int batchID = rsChartBatchBySite.getInt(1);
-			if(batchID != currentBatch){
-				if(currentBatch != 0){
-					newRow.add(numberOfSites - 1,batchCountTotal);
-					batchCounts.add(newRow);
-					
-				}
-				newRow =  new Vector<Integer>(initializer);
-				currentBatch = batchID;
-				newRow.set(0, batchID);
-				batchCountTotal = 0;
-			}
-			
-			int webID =  rsChartBatchBySite.getInt(2);
-			int count =  rsChartBatchBySite.getInt(4);
-			System.out.println(webID);
-			batchCountTotal = batchCountTotal + count;
-			newRow.set(webID, count);
-		}
-				
-		StringBuilder dataBuild = new StringBuilder();
-		dataBuild.append("['ID',");
-		  for (int x = 1 ; x < numberOfSites - 1; x ++){
-			  dataBuild.append("'");
-			  String websiteFullLink = websiteMap.get(x);
-			  System.out.println(websiteFullLink);
-			  int trim_location = websiteFullLink.indexOf("www.");
-			  trim_location = trim_location + 4;
-			  dataBuild.append(websiteFullLink.substring(trim_location));
-			  dataBuild.append("',");
-		  }
-		  dataBuild.append("'Total' ");
-		  //build.replace(build.length(), build.length(), "");
-		for(int i = 0; i < batchCounts.size(); i++){
-			dataBuild.deleteCharAt(dataBuild.length() - 1);
-			dataBuild.append("],[");
-			for(int j = 0; j < batchCounts.get(i).size();j++){
-				dataBuild.append(batchCounts.get(i).get(j));
-				dataBuild.append(",");
-			}
-			System.out.println();
-		}
-		dataBuild.deleteCharAt(dataBuild.length() - 1);
-		 System.out.println(dataBuild.toString());
-	   
-       }catch(SQLException e){
-			   
-		   }
+		System.out.println(full_page.toString());
 	}
 	
 	public static void siteTest(){
@@ -291,6 +240,41 @@ public class RunTests {
 						
 						
 						full_page.append("</table>");	
+						
+						
+						
+						String dailyProperArticleCountQuery = "Select AP.full_proper, AP.count," 
+								+" count(artProp.proper_id) articleCount from ALL_PROPER AP join ARTICLE_PROPER "
+								+ "artProp on AP.proper_id = artProp.proper_id "
+								+ "join ARTICLES ART on ART.article_id = artProp.article_id "
+								+ "join BATCHES bat on bat.batch_id = ART.batch_id where bat.batch_id in " + inBatches 
+								+ " group by artProp.proper_id order by "
+								+ "articleCount desc limit 20;";
+								
+								
+								CachedRowSet rsArticleProperCountDaily = dbConnect
+										.queryNewsDB(dailyProperArticleCountQuery);
+								
+								full_page.append("<br><br><h2>Total Articles Used In Daily</h2><table style=\"width:100%\">");
+								String dailyProperArticleCountStart = "<tr><th>Name</th><th>Total Count</th><th>Article Count</th></tr>";
+								full_page.append(dailyProperArticleCountStart);
+								
+								
+								while(rsArticleProperCountDaily.next()){
+									
+									String full_proper = rsArticleProperCountDaily.getString(1);
+									int total_count = rsArticleProperCountDaily.getInt(2);
+									int article_count = rsArticleProperCountDaily.getInt(3);
+									
+									String singleLine = "<tr><td>" + full_proper + "</td><td>" + total_count
+											+ "</td><td>" + article_count +"</td></tr>";
+									full_page.append(singleLine);
+									
+								}
+								
+								
+								full_page.append("</table>");	
+						
 				
 				//This must be the last thing added
 				full_page.append("<div id=\"chart_div\"></div></html>");
@@ -568,8 +552,8 @@ public class RunTests {
 
 	public static void readSingleGenericArticle() {
 		GenericArticle oneArt = new GenericArticle(				
-				"http://www.reuters.com/article/idUSKBN15O2XS",
-				5);
+				"http://www.politico.com/story/2017/02/elliott-abrams-no-deputy-secretary-of-state-234908",
+				6);
 		ArticleContent testContent = oneArt.readAndDigestArticle();
 
 	}

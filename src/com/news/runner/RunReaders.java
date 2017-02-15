@@ -3,16 +3,11 @@ package com.news.runner;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.sql.rowset.CachedRowSet;
-
-import com.news.huffpost.reader.*;
 import com.news.common.*;
 
 public class RunReaders {
