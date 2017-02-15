@@ -531,19 +531,22 @@ public class RunTests {
 
 	public static void testSingleGenericHomepage() {
 		Set<String> gatheredLinks = null;
-		String testHomeUrl = "http://www.reuters.com";
+		String testHomeUrl = "http://www.independent.co.uk/us";
 		List<String> testLinkList = new ArrayList<String>();
 		List<String> testattrList = new ArrayList<String>();
 		/*testLinkList.add("_top");
 		testattrList.add("target");*/
-		testLinkList.add("story-title");
+		testLinkList.add("story");
 		testattrList.add("class");
 		
 		
 		//testLinkList.add("hero-v6-story__headline-link");
-		GenericHomepage genHome = new GenericHomepage(testHomeUrl, 5);
+		GenericHomepage genHome = new GenericHomepage(testHomeUrl, 10);
 		gatheredLinks = genHome.ReadHomepageLinks(testattrList,testLinkList);
 
+		
+		System.out.println(gatheredLinks.size());
+		
 		for (String oneLink : gatheredLinks) {
 			System.out.println(oneLink);
 		}

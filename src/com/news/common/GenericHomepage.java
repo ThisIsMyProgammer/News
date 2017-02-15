@@ -23,12 +23,14 @@ public class GenericHomepage {
 	String rEnd;
 	String base_start_url;
 	List<String> articleIdentifer;
+	String startingUrl;
 	int id;
 
 	public GenericHomepage(String HomeUrl, int webID) {
 		base_url = HomeUrl;
 		id = webID;
 		articleIdentifer = new ArrayList<String>();
+		startingUrl = base_url;
 		
 		DataBaseConnector dbConnect = new DataBaseConnector();
 		try {
@@ -42,6 +44,14 @@ public class GenericHomepage {
 			}
 			
 			
+			
+			CachedRowSet rsHomeReplace = dbConnect.queryNewsDB("select * from HOME_LINK_REPLACEMENT"
+					+ " where site_id = " + webID + ";"); 
+			
+			
+			while(rsHomeReplace.next()){
+				startingUrl = rsHomeReplace.getString(2);
+			}
 			
 		}catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -90,8 +100,8 @@ public class GenericHomepage {
 								homeLink = oneElement.getElementsByIndexEquals(
 										0).attr("href");
 
-								if (!homeLink.startsWith(base_url)) {
-									homeLink = base_url + homeLink;
+								if (!homeLink.startsWith(startingUrl)) {
+									homeLink = startingUrl + homeLink;
 								}
 								if(articleIdentifer.isEmpty()){
 									UniqLinks.add(homeLink);

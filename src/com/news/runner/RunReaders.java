@@ -25,6 +25,10 @@ public class RunReaders {
 		coveredWebsites.add("bbc");
 		coveredWebsites.add("reuters");
 		coveredWebsites.add("politico");
+		coveredWebsites.add("thehill");
+		coveredWebsites.add("bigstory.ap");
+		coveredWebsites.add("nbcnews");
+		coveredWebsites.add("independent.co.uk");
 		List<String> cleanProper = new ArrayList<String>();
 
 		Set<String> siteLinks = null;
