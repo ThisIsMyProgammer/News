@@ -230,6 +230,9 @@ public class RunReaders {
 			dbConnect
 			.updateNewsDB("UPDATE BATCHES set END_TIME = CURRENT_TIMESTAMP where batch_id ="
 					+ batch_id + ";");
+			
+			dbConnect
+			.updateNewsDB("INSERT INTO ERROR_BATCHES(batch_id) values (" + batch_id + ");");
 			e.printStackTrace();
 		}
 
