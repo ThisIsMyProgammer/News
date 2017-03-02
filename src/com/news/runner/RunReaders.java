@@ -33,6 +33,7 @@ public class RunReaders {
 
 		Set<String> siteLinks = null;
 
+		int batch_id = -999;
 		DataBaseConnector dbConnect = new DataBaseConnector();
 		try {
 
@@ -43,7 +44,6 @@ public class RunReaders {
 				cleanProper.add(rsCleanProper.getString(1));
 			}
 
-			int batch_id = -999;
 
 			dbConnect.updateNewsDB("insert into BATCHES() values ();");
 			CachedRowSet rsBatch = dbConnect
@@ -227,6 +227,9 @@ public class RunReaders {
 
 		} catch (SQLException e) {
 
+			dbConnect
+			.updateNewsDB("UPDATE BATCHES set END_TIME = CURRENT_TIMESTAMP where batch_id ="
+					+ batch_id + ";");
 			e.printStackTrace();
 		}
 
